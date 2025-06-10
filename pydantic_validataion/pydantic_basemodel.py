@@ -1,17 +1,23 @@
-from pydantic import BaseModel, ValidationError, EmailStr, AnyUrl, Field
+from pydantic import BaseModel, ValidationError, EmailStr, AnyUrl, Field, AfterValidator
 from typing import List, Optional, Annotated
 
 
 class Patient(BaseModel):
     name: Annotated[
-        str, Field(max_length=4, description="usefull in api documentation")
+        str,
+        Field(
+            max_length=4,
+            description="usefull in api documentation",
+            title="name of the patient",
+        ),
+        AfterValidator(lambda v: v.upper()),  # uppercase the name of the patient
     ]
     url: AnyUrl
     email: EmailStr
     age: int
-    weight: Annotated[float, Field(gt=0, lt=50)]
+    weight: Annotated[float, Field(gt=0, lt=50, strict=True)]
     married: bool | None = False
-    allergies: Optional[list[str] | None] = None
+    allergies: Annotated[list[str] | None, Field(default=None)]
     contact_details: dict[str, str | int]
 
 
