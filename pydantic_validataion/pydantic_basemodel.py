@@ -1,15 +1,17 @@
-from pydantic import BaseModel, ValidationError, EmailStr, AnyUrl
-from typing import List,Optional
+from pydantic import BaseModel, ValidationError, EmailStr, AnyUrl, Field
+from typing import List, Optional, Annotated
 
 
 class Patient(BaseModel):
-    name: str
-    url: AnyUrl  
+    name: Annotated[
+        str, Field(max_length=4, description="usefull in api documentation")
+    ]
+    url: AnyUrl
     email: EmailStr
     age: int
-    weight: float
+    weight: Annotated[float, Field(gt=0, lt=50)]
     married: bool | None = False
-    allergies: Optional[list[str] | None ] = None
+    allergies: Optional[list[str] | None] = None
     contact_details: dict[str, str | int]
 
 
@@ -22,12 +24,12 @@ def create_patient(data: Patient):
 
 try:
     patient_info = {
-        "name": "abc",
+        "name": "abcs",
         "age": "34",
-        "email":"aa@gmail.com",
+        "email": "aa@gmail.com",
         "url": "https://docs.pydantic",
         # "married":True,
-        "weight": 40.2,
+        "weight": 3,
         # "allergies": [12],
         "contact_details": {"phone": 12},
     }
