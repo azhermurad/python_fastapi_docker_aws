@@ -17,7 +17,7 @@ def load_json(path="patients.json"):
 @app.get("/")
 def root():
     return "api is working!!!"
-
+ 
 
 @app.get("/patients")
 def get_patients():
@@ -31,7 +31,7 @@ def get_patients():
 async def get_patient(
     patient_id: str = Path(..., description="ID of the patient", example="P001"),
     skip: int | None = None,
-    limit: int = 10,
+    limit: int= 10, 
 ):
     patients = load_json("patients.json")
     if patients.get(patient_id):
