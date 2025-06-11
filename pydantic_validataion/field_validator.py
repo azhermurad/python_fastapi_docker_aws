@@ -1,4 +1,12 @@
-from pydantic import BaseModel, ValidationError, EmailStr, AnyUrl, Field, AfterValidator,field_validator
+from pydantic import (
+    BaseModel,
+    ValidationError,
+    EmailStr,
+    AnyUrl,
+    Field,
+    AfterValidator,
+    field_validator,
+)
 from typing import List, Optional, Annotated
 
 
@@ -11,22 +19,22 @@ class Patient(BaseModel):
     married: bool | None = False
     allergies: Annotated[list[str] | None, Field(default=None)]
     contact_details: dict[str, str | int]
-    
+
     @field_validator("name")
     @classmethod
     def uppercase(cls, value):
         return value.upper()
-    
-    
+
     # field validator are used for the validation of the field
     @field_validator("email")
     @classmethod
     def is_even(cls, value: str) -> str:
-        valid = ["hdfc.com",'icici.com']
+        valid = ["hdfc.com", "icici.com"]
         email = value.split("@")[-1]
         if email not in valid:
             raise ValueError(f"{value} is not a valid email")
         return value
+
 
 # create patient fucntion
 def create_patient(data: Patient):
