@@ -2,9 +2,8 @@ from fastapi import FastAPI, Path, HTTPException, Query
 from fastapi.responses import JSONResponse
 from typing import Annotated, Literal
 import json
-from customtypes.patientTypes import PatientSorted
 from pydantic import AfterValidator, BaseModel, computed_field, Field
-
+from enum import Enum
 
 app = FastAPI()
 
@@ -45,6 +44,13 @@ def check_valid_order(order: str):
     if order not in ["asc", "desc"]:
         raise HTTPException(status_code=400, detail="order should be asc or desc")
     return order
+
+
+
+class PatientSorted(str, Enum):
+    weight = ("weight",)
+    height = ("height",)
+    bmi = "bmi"
 
 
 # SORT PATIENTS
