@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Path, HTTPException, Query
+from fastapi.responses import JSONResponse
 from typing import Annotated, Literal
 import json
 from customtypes.patientTypes import PatientSorted
@@ -117,16 +118,14 @@ class Patient(BaseModel):
 
 
 @app.post("/patient/")
-def create_patient(data: Patient):
-    patients = load_json()
-    if not patients.get(data.id):
-        data = data.model_dump()
-        key_to_remove = 'id'
-        filtered_data = {k: v for k, v in data.items() if k != key_to_remove}
-        patients[data.get("id")] = filtered_data
+def create_patient(patient: Patient):
+    data = load_json()
+    if not patient.id in data:
+        filtered_data = patient.model_dump(exclude=["id"])
+        data[patient.id] = filtered_data
         with open("patients.json", mode="w") as file:
-            json.dump(patients, file)
-        return  {"data": load_json()}
+            json.dump(data, file)
+        return JSONResponse(status_code=201,content=load_json())
     else:
         raise HTTPException(status_code=400, detail="patient is already exist!!!")
     
