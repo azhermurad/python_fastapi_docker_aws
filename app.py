@@ -96,7 +96,7 @@ class Patient(BaseModel):
     age: Annotated[int, Field(..., gt=0, lt=100, description="name of the patent")]
     gender: Annotated[
         Literal["male", "female", "other"],
-        Field(description="gender should be male, female or other"),
+        Field(..., description="gender should be male, female or other"),
     ]
     height: Annotated[float, Field(..., description="height of the patient", gt=0)]
     weight: Annotated[float, Field(..., description="weight of the patent", gt=0)]
@@ -125,7 +125,79 @@ def create_patient(patient: Patient):
         data[patient.id] = filtered_data
         with open("patients.json", mode="w") as file:
             json.dump(data, file)
-        return JSONResponse(status_code=201,content=load_json())
+        return JSONResponse(status_code=201, content=load_json())
     else:
         raise HTTPException(status_code=400, detail="patient is already exist!!!")
-    
+
+
+# UPDATE PATIENT
+
+
+class PatientUpdate(BaseModel):
+    name: Annotated[str, Field(default=None, description="name of the patent")]
+    city: Annotated[str, Field(default=None, description="City name")]
+    age: Annotated[
+        int, Field(default=None, gt=0, lt=100, description="name of the patent")
+    ]
+    gender: Annotated[
+        Literal["male", "female", "other"],
+        Field(default=None, description="gender should be male, female or other"),
+    ]
+    height: Annotated[
+        float, Field(default=None, description="height of the patient", gt=0)
+    ]
+    weight: Annotated[
+        float, Field(default=None, description="weight of the patent", gt=0)
+    ]
+
+
+@app.put("/patient/{patient_id}")
+def update_patient(
+    patient_id: Annotated[str, Path(..., description="patient_id", example="P001")],
+    patient: PatientUpdate,
+):
+    patients = load_json()
+    if patient_id in patients:
+        existing_patient = patients[patient_id]
+        data = patient.model_dump(exclude_unset=True)
+
+        for key, value in data.items():
+            existing_patient[key] = value
+
+        if data.get("height") or data.get("weight"):
+            existing_patient["bmi"] = round(
+                existing_patient["weight"] / existing_patient["height"] ** 2, 2
+            )
+
+            if existing_patient["bmi"] < 18.5:
+                existing_patient["verdict"] = "underweight"
+            elif existing_patient["bmi"] < 30:
+                existing_patient["verdict"] = "normal"
+            else:
+                existing_patient["verdict"] = "obese"
+
+        # update the value in the database
+        patients[patient_id] = existing_patient
+
+        with open("patients.json", mode="w") as file:
+            json.dump(patients, file)
+
+        return JSONResponse(status_code=200, content=load_json())
+
+    raise HTTPException(status_code=404, detail="Patient Not Founded!!!")
+
+
+# DELETE PATIENT
+@app.delete("/patient/{patient_id}")
+def delete_patient(
+    patient_id: Annotated[str, Path(description="id of the patient", example="P001")],
+):
+    patients = load_json()
+    if patient_id in patients:
+        del patients[patient_id]
+        with open("patients.json", mode="w") as file:
+            json.dump(patients, file)
+        return JSONResponse(status_code=200, content=load_json())
+
+    raise HTTPException(status_code=404, detail="Patient Not Founded!!!")
+
