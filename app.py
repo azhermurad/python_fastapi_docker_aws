@@ -1,8 +1,8 @@
 from fastapi import FastAPI, Path, HTTPException, Query
-from typing import Annotated
+from typing import Annotated, Literal
 import json
 from customtypes.patientTypes import PatientSorted
-from pydantic import AfterValidator
+from pydantic import AfterValidator, BaseModel, computed_field, Field
 
 
 app = FastAPI()
@@ -14,24 +14,24 @@ def load_json(path="patients.json"):
         return file
 
 
+# ROOT API
 @app.get("/")
 def root():
     return "api is working!!!"
- 
 
+
+# GET ALL PATIENTS
 @app.get("/patients")
 def get_patients():
     return load_json("patients.json")
 
 
+# GET PATIENT BY IT ID
 
-# path parameters
 
 @app.get("/patient/{patient_id}")
 async def get_patient(
     patient_id: str = Path(..., description="ID of the patient", example="P001"),
-    skip: int | None = None,
-    limit: int= 10, 
 ):
     patients = load_json("patients.json")
     if patients.get(patient_id):
@@ -46,7 +46,7 @@ def check_valid_order(order: str):
     return order
 
 
-# sort the patient
+# SORT PATIENTS
 @app.get("/sort")
 def sort_patient(
     sort_by: Annotated[
@@ -76,4 +76,57 @@ def sort_patient(
     return {"data": data}
 
 
+# POST METHOD: CREATE A PATIENT
 
+#   "name": "Neha Sinha",
+#         "city": "Kolkata",
+#         "age": 30,
+#         "gender": "female",
+#         "height": 1.55,
+#         "weight": 75,
+#         "bmi": 31.22,
+#         "verdict": "Obese"
+
+
+class Patient(BaseModel):
+    id: Annotated[str, Field(..., description="ID of the patient", examples=["P001"])]
+    name: Annotated[str, Field(..., description="name of the patent")]
+    city: Annotated[str, Field(..., description="City name")]
+    age: Annotated[int, Field(..., gt=0, lt=100, description="name of the patent")]
+    gender: Annotated[
+        Literal["male", "female", "other"],
+        Field(description="gender should be male, female or other"),
+    ]
+    height: Annotated[float, Field(..., description="height of the patient", gt=0)]
+    weight: Annotated[float, Field(..., description="weight of the patent", gt=0)]
+
+    @computed_field
+    @property
+    def bmi(self) -> float:
+        return round(self.weight / self.height**2, 2)
+
+    @computed_field
+    @property
+    def verdict(self) -> str:
+        if self.bmi < 18.5:
+            return "underweight"
+        elif self.bmi < 30:
+            return "normal"
+        else:
+            return "obese"
+
+
+@app.post("/patient/")
+def create_patient(data: Patient):
+    patients = load_json()
+    if not patients.get(data.id):
+        data = data.model_dump()
+        key_to_remove = 'id'
+        filtered_data = {k: v for k, v in data.items() if k != key_to_remove}
+        patients[data.get("id")] = filtered_data
+        with open("patients.json", mode="w") as file:
+            json.dump(patients, file)
+        return  {"data": load_json()}
+    else:
+        raise HTTPException(status_code=400, detail="patient is already exist!!!")
+    
