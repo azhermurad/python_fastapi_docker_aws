@@ -32,7 +32,7 @@ class Predict(BaseModel):
 
 @app.get("/")
 def root():
-    return {"data":""}
+    return {"data":"Internet User Clicked On An Advertisement Tracker API"}
 
 
 @app.post("/predict")
