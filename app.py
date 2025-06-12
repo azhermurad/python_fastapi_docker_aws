@@ -30,6 +30,11 @@ class Predict(BaseModel):
     Gender: Annotated[Literal["male", "female"], Field(description="Gender")]
 
 
+@app.get("/")
+def root():
+    return {"data":""}
+
+
 @app.post("/predict")
 def predict(data: Predict):
     df = pd.DataFrame(
