@@ -39,6 +39,6 @@ COPY ./app /code/app
 # Set the command to use fastapi run, which uses Uvicorn underneath.
 # CMD takes a list of strings, each of these strings is what you would type in the command line separated by spaces.
 # This command will be run from the current working directory, the same /code directory you set above with WORKDIR /code.
-
-CMD ["fastapi", "run", "app/app.py","--port","80"]
+# EXPOSE 80
+CMD ["fastapi", "run", "app/app.py","--host","0.0.0.0" ,"--port","80"]
 
