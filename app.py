@@ -1,33 +1,11 @@
-from fastapi import FastAPI, Path, HTTPException
+from fastapi import FastAPI
 from fastapi.responses import JSONResponse
-from typing import Annotated, Literal
-from pydantic import AfterValidator, BaseModel, Field
 import pandas as pd
-import pickle
+from schema.predict_user import PredictUser
+from model.predict import load_model
 
 app = FastAPI()
 
-
-class Predict(BaseModel):
-    DailyTimeSpentonSite: Annotated[
-        float, Field(description="Time spend on site in minitue", examples=[68.95])
-    ]
-    Age: Annotated[int, Field(description="Age of the user", examples=[35])]
-    AreaIncome: Annotated[
-        float,
-        Field(
-            description="Avg. Income of geographical area of consumer",
-            examples=[61833.90],
-        ),
-    ]
-    DailyInternetUsage: Annotated[
-        float,
-        Field(
-            description=" Usage': Avg. minutes a day consumer is on the internet",
-            examples=[256.09],
-        ),
-    ]
-    Gender: Annotated[Literal["male", "female"], Field(description="Gender")]
 
 
 @app.get("/")
@@ -36,7 +14,7 @@ def root():
 
 
 @app.post("/predict")
-def predict(data: Predict):
+def predict(data: PredictUser):
     df = pd.DataFrame(
         [
             {
@@ -48,12 +26,6 @@ def predict(data: Predict):
             }
         ]
     )
-    print(df.head())
-
-    # load model using picke
-    with open("model.pkl", "rb") as f:
-        model = pickle.load(f)
-        clicked_on_ad = model.predict(df)[0]
-        res = "Clicked" if clicked_on_ad else "Not Clicked"
-        print(clicked_on_ad)
+    res = load_model(df)
+   
     return JSONResponse(status_code=200, content={"data": f"{res}"})
