@@ -5,31 +5,36 @@ name: CI/CD for Dockerized FastAPI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 permissions:
   contents: read
 
 jobs:
-  build_and:
-
+  build_and_test:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+      #step one
+      - uses: actions/checkout@v4
 
-    - name: Set up Python 3.10
-      uses: actions/setup-python@v3
-      with:
-        python-version: "3.10"
-    
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-    
-    - name: Test with pytest
-      run: |
-        pytest
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.10"
+
+
+          # we can check the python version 
+      - name: Display Python version
+        run: python -c "import sys; print(sys.version)"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Test with pytest
+        run: |
+          pytest
