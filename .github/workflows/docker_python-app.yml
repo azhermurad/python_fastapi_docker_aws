@@ -26,7 +26,7 @@ jobs:
           python-version: "3.10"
 
 
-          # we can check the python version 
+          # we can check the python version this method show teh python
       - name: Display Python version
         run: python -c "import sys; print(sys.version)"
 
@@ -35,6 +35,15 @@ jobs:
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
+      # - name: Test with pytest
+      #   run: |
+      #     pytest
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
       - name: Test with pytest
         run: |
           pytest
+    
+
