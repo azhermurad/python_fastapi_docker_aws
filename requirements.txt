@@ -2,3 +2,5 @@ fastapi[standard]
 pydantic
 pandas
 scikit-learn
+httpx
+pytest
